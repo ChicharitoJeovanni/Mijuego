@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Fondo con Pinos, Estrellas, Luna y Perro</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden; /* Evita que se muestre la barra de desplazamiento */
+    }
+    canvas {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+</style>
+</head>
+<body>
+<canvas id="miCanvas"></canvas>
+
+<script>
+    // Obtener el contexto del canvas
+    var canvas = document.getElementById("miCanvas");
+    var ctx = canvas.getContext("2d");
+
+    // Ajustar el tamaño del canvas al de la ventana del navegador
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    var personajeX = 100; // Posición inicial en x del personaje
+    var personajeY = canvas.height - 100; // Posición inicial en y del personaje (colocado en la parte inferior del canvas)
+    
+    var enemigoX = canvas.width - 200; // Posición inicial en x del enemigo
+    var enemigoY = 100; // Posición inicial en y del enemigo
+
+    var proyectiles = []; // Lista para almacenar los proyectiles
+    var estrellas = []; // Lista para almacenar las estrellas
+
+    // Cargar las imágenes
+    var personajeImg = new Image();
+    personajeImg.src = 'personaje2.png';
+
+    var enemigoImg = new Image();
+    enemigoImg.src = 'araña.png';
+
+    // Generar estrellas estáticas
+    function generarEstrellas() {
+        for (var i = 0; i < 50; i++) {
+            var x = Math.random() * canvas.width;
+            var y = Math.random() * canvas.height * 0.5; // Estrellas en la mitad superior
+            estrellas.push({x: x, y: y});
+        }
+    }
+
+    // Dibujar el fondo
+    function drawBackground() {
+        // Dibujar el fondo negro
+        ctx.fillStyle = "#000000"; // Negro
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Dibujar estrellas
+        ctx.fillStyle = "#FFFFFF"; // Blanco
+        estrellas.forEach(function(estrella) {
+            ctx.fillRect(estrella.x, estrella.y, 2, 2); // Tamaño de las estrellas
+        });
+
+        // Dibujar la luna
+        ctx.beginPath();
+        ctx.fillStyle = "#FFFFCC"; // Amarillo claro
+        ctx.arc(canvas.width - 100, 100, 50, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Dibujar el suelo de pasto
+        ctx.fillStyle = "#228B22"; // Verde oscuro
+        ctx.fillRect(0, canvas.height - 100, canvas.width, 100);
+
+        // Dibujar los pinos
+        ctx.fillStyle = "#228B22"; // Verde oscuro
+        // Primer pino
+        ctx.beginPath();
+        ctx.moveTo(canvas.width / 4, canvas.height - 150); // Punto inferior
+        ctx.lineTo(canvas.width / 3, canvas.height * 0.35); // Punto superior izquierdo
+        ctx.lineTo(canvas.width / 2.5, canvas.height - 150); // Punto superior derecho
+        ctx.closePath();
+        ctx.fill();
+        // Segundo pino
+        ctx.beginPath();
+        ctx.moveTo(canvas.width * 0.625, canvas.height - 150); // Punto inferior
+        ctx.lineTo(canvas.width * 0.75, canvas.height * 0.55); // Punto superior izquierdo
+        ctx.lineTo(canvas.width * 0.875, canvas.height - 150); // Punto superior derecho
+        ctx.closePath();
+        ctx.fill();
+
+        // Dibujar los troncos de los pinos
+        ctx.fillStyle = "#8B4513"; // Marrón oscuro
+        ctx.fillRect(canvas.width / 3.2, canvas.height - 150, 30, 150); // Tronco del primer pino
+        ctx.fillRect(canvas.width * 0.7, canvas.height - 150, 30, 150); // Tronco del segundo pino
+    }
+
+    // Dibujar al personaje
+    function drawCharacter() {
+        ctx.drawImage(personajeImg, personajeX, personajeY, 150, 100);
+    }
+
+    // Dibujar al enemigo
+    function drawEnemy() {
+        ctx.drawImage(enemigoImg, enemigoX, enemigoY, 100, 100);
+    }
+
+    // Dibujar los proyectiles
+    function drawProjectiles() {
+        ctx.fillStyle = "#FF0000"; // Rojo para los proyectiles
+        proyectiles.forEach(function(proyectil) {
+            ctx.fillRect(proyectil.x, proyectil.y, 10, 10);
+        });
+    }
+
+    // Función para limpiar el canvas y redibujar el fondo, el personaje, el enemigo y los proyectiles
+    function redraw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpiar el canvas
+        drawBackground(); // Redibujar el fondo
+        drawCharacter(); // Redibujar al personaje en su nueva posición
+        drawEnemy(); // Redibujar al enemigo en su nueva posición
+        drawProjectiles(); // Dibujar los proyectiles
+    }
+
+    // Función para mover el personaje hacia la derecha
+    function moveCharacterRight() {
+        personajeX += 5; // Mover el personaje 5 unidades hacia la derecha
+        redraw(); // Redibujar el canvas
+    }
+
+    // Función para mover el personaje hacia la izquierda
+    function moveCharacterLeft() {
+        personajeX -= 5; // Mover el personaje 5 unidades hacia la izquierda
+        redraw(); // Redibujar el canvas
+    }
+
+    // Función para mover el personaje hacia arriba
+    function moveCharacterUp() {
+        personajeY -= 5; // Mover el personaje 5 unidades hacia arriba
+        redraw(); // Redibujar el canvas
+    }
+
+    // Función para mover el personaje hacia abajo
+    function moveCharacterDown() {
+        personajeY += 5; // Mover el personaje 5 unidades hacia abajo
+        redraw(); // Redibujar el canvas
+    }
+
+    // Event listeners para las teclas de flecha derecha, izquierda, arriba y abajo
+    document.addEventListener("keydown", function(event) {
+        if (event.key === "ArrowRight") {
+            moveCharacterRight();
+        } else if (event.key === "ArrowLeft") {
+            moveCharacterLeft();
+        } else if (event.key === "ArrowUp") {
+            moveCharacterUp();
+        } else if (event.key === "ArrowDown") {
+            moveCharacterDown();
+        }
+    });
+
+    // Mover el enemigo de izquierda a derecha
+    function moveEnemy() {
+        enemigoX -= 2; // Mover el enemigo 2 unidades hacia la izquierda
+        if (enemigoX < -100) { // Si el enemigo sale del canvas, reaparecer en el lado derecho
+            enemigoX = canvas.width;
+        }
+    }
+
+    // Crear un proyectil
+    function createProjectile() {
+        var proyectil = { x: enemigoX, y: enemigoY + 50 }; // Posición inicial del proyectil
+        proyectiles.push(proyectil);
+    }
+
+    // Mover los proyectiles
+    function moveProjectiles() {
+        proyectiles.forEach(function(proyectil, index) {
+            proyectil.y += 5; // Mover el proyectil 5 unidades hacia abajo
+            // Eliminar el proyectil si sale del canvas
+            if (proyectil.y > canvas.height) {
+                proyectiles.splice(index, 1);
+            }
+        });
+    }
+
+    // Verificar colisión entre el personaje y los proyectiles
+    function checkCollisions() {
+        for (var i = 0; i < proyectiles.length; i++) {
+            var proyectil = proyectiles[i];
+            if (proyectil.x < personajeX + 150 &&
+                proyectil.x + 10 > personajeX &&
+                proyectil.y < personajeY + 100 &&
+                proyectil.y + 10 > personajeY) {
+                return true; // Hay colisión
+            }
+        }
+        return false; // No hay colisión
+    }
+
+    // Función de animación
+    function animate() {
+        if (checkCollisions()) {
+            alert("Game Over!"); // Mostrar mensaje de "Game Over"
+            return; // Detener la animación
+        }
+        moveEnemy(); // Mover el enemigo
+        moveProjectiles(); // Mover los proyectiles
+        redraw(); // Redibujar todo el contenido del canvas
+        requestAnimationFrame(animate); // Llamar a la función de animación en el siguiente frame
+    }
+
+    // Generar estrellas una vez
+    generarEstrellas();
+
+    // Intervalo para crear un proyectil cada segundo
+    setInterval(createProjectile, 1000);
+
+    // Iniciar la animación
+    animate();
+
+    // Dibujar el fondo, el personaje y el enemigo inicialmente
+    redraw();
+</script>
+</body>
+</html>
